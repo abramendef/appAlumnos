@@ -9,6 +9,15 @@
     <color name="fondoSalir">#E65100</color>
     <color name="fondoContenedor">#FFEA00</color>
 
+    <color name="azul_fondo">#0D47A1</color> <!-- Azul profundo -->
+    <color name="azul_oscuro">#1565C0</color> <!-- Azul intenso -->
+    <color name="azul_medio">#1E88E5</color> <!-- Azul medio -->
+    <color name="azul_claro">#64B5F6</color> <!-- Azul suave -->
+    <color name="azul_muy_claro">#BBDEFB</color> <!-- Azul pastel -->
+    <color name="azul_texto">#0D47A1</color> <!-- Azul para texto -->
+    <color name="blanco">#FFFFFF</color>
+    <color name="negro">#000000</color>
+
 
 
 </resources>
