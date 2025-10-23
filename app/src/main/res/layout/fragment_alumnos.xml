@@ -141,6 +141,16 @@
                     android:text="Borrar"
                     android:textColor="@color/blanco" />
             </LinearLayout>
+
+            <Button
+                android:id="@+id/btnLimpiar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Limpiar"
+                android:backgroundTint="@color/azul_medio"
+                android:textStyle="bold">
+            </Button>
+
         </LinearLayout>
 
     </FrameLayout>

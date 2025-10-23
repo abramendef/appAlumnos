@@ -5,6 +5,12 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.Toast
+import com.example.appunidad02.database.Alumno
+import com.example.appunidad02.database.AlumnoDB
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -17,43 +23,110 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class AlumnosFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private lateinit var btnGuardar: Button
+    private lateinit var btnBuscar: Button
+    private lateinit var btnBorrar: Button
+    private lateinit var btnLimpiar: Button
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var txtMatricula: EditText
+    private lateinit var txtNombre: EditText
+    private lateinit var txtDomicilio: EditText
+    private lateinit var txtEspecialidad: EditText
+
+    private lateinit var imgFoto: ImageView
+
+    private lateinit var db: AlumnoDB
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_alumnos, container, false)
+        val view = inflater.inflate(R.layout.fragment_alumnos, container, false)
+        iniciarComponentes(view)
+        eventosClick()
+        return view
+
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment AlumnosFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            AlumnosFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+    fun iniciarComponentes(view: View) {
+        btnGuardar = view.findViewById(R.id.btnGuardar)
+        btnBuscar = view.findViewById(R.id.btnBuscar)
+        btnBorrar = view.findViewById(R.id.btnBorrar)
+        btnLimpiar = view.findViewById(R.id.btnLimpiar)
+
+        txtMatricula = view.findViewById(R.id.txtMatricula)
+        txtNombre = view.findViewById(R.id.txtNombre)
+        txtDomicilio = view.findViewById(R.id.txtDomicilio)
+        txtEspecialidad = view.findViewById(R.id.txtEspecialidad)
+        imgFoto = view.findViewById(R.id.imgAlumno)
     }
+
+    fun eventosClick(){
+        btnGuardar.setOnClickListener(View.OnClickListener {
+            if(txtMatricula.text.isEmpty() || txtNombre.text.isEmpty() || txtDomicilio.text.isEmpty() || txtEspecialidad.text.isEmpty()){
+
+                Toast.makeText(context, "Debe llenar todos los campos", Toast.LENGTH_SHORT).show()
+            } else {
+                db = AlumnoDB(requireContext())
+                db.openDataBase()
+                val matricula = txtMatricula.text.toString()
+                val nombre = txtNombre.text.toString()
+                val domicilio = txtDomicilio.text.toString()
+                val especialidad = txtEspecialidad.text.toString()
+                val nuevoAlumno = Alumno().apply {
+                    this.matricula = matricula
+                    this.nombre = nombre
+                    this.domicilio = domicilio
+                    this.especialidad = especialidad
+                    this.foto = ""
+                }
+
+                val id = db.insertarAlumno(nuevoAlumno)
+                if (id > 0){
+                    Toast.makeText(requireContext(), "Alumno agregado ID= $id", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "Error al agregar alumno", Toast.LENGTH_SHORT).show()
+                }
+                db.close()
+
+            }
+        })
+
+        btnBuscar.setOnClickListener(View.OnClickListener {
+            if(txtMatricula.text.isEmpty()){
+                Toast.makeText(context, "Debe ingresar una matrícula", Toast.LENGTH_SHORT).show()
+            } else {
+                db = AlumnoDB(requireContext())
+                db.openDataBase()
+                val alumno:Alumno = db.getAlumno(txtMatricula.text.toString())
+                if (alumno.id!=0){
+                    txtNombre.setText(alumno.nombre)
+                    txtDomicilio.setText(alumno.domicilio)
+                    txtEspecialidad.setText(alumno.especialidad)
+                } else {
+                    Toast.makeText(requireContext(), "No existe el alumno", Toast.LENGTH_SHORT).show()
+                }
+                db.close()
+            }
+
+        })
+
+        btnLimpiar.setOnClickListener(View.OnClickListener {
+            if(txtMatricula.text.isEmpty() || txtNombre.text.isEmpty() || txtDomicilio.text.isEmpty() || txtEspecialidad.text.isEmpty()){
+
+                Toast.makeText(context, "Limpio", Toast.LENGTH_SHORT).show()
+            } else {
+                txtMatricula.setText("")
+                txtNombre.setText("")
+                txtDomicilio.setText("")
+                txtEspecialidad.setText("")
+            }
+        })
+
+
+
+    }
+
 }
