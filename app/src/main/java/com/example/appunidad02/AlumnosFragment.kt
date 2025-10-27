@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import com.example.appunidad02.database.Alumno
 import com.example.appunidad02.database.AlumnoDB
 
@@ -64,35 +65,80 @@ class AlumnosFragment : Fragment() {
     }
 
     fun eventosClick(){
-        btnGuardar.setOnClickListener(View.OnClickListener {
-            if(txtMatricula.text.isEmpty() || txtNombre.text.isEmpty() || txtDomicilio.text.isEmpty() || txtEspecialidad.text.isEmpty()){
+        btnGuardar.setOnClickListener{
 
-                Toast.makeText(context, "Debe llenar todos los campos", Toast.LENGTH_SHORT).show()
-            } else {
-                db = AlumnoDB(requireContext())
+            if (txtMatricula.text.isEmpty() ||txtNombre.text.isEmpty() ||txtDomicilio.text.isEmpty() ||txtEspecialidad.text.isEmpty() )
+            {
+                Toast.makeText(requireContext(), "Faltó Información", Toast.LENGTH_SHORT).show()
+            }
+
+            else {
+
+                val db = AlumnoDB(requireContext())
                 db.openDataBase()
                 val matricula = txtMatricula.text.toString()
                 val nombre = txtNombre.text.toString()
                 val domicilio = txtDomicilio.text.toString()
                 val especialidad = txtEspecialidad.text.toString()
-                val nuevoAlumno = Alumno().apply {
+
+                // Generar el objeto alumno y asignar los datos
+                val dataAlumno = Alumno().apply {
                     this.matricula = matricula
                     this.nombre = nombre
                     this.domicilio = domicilio
                     this.especialidad = especialidad
-                    this.foto = ""
                 }
+                // validar primero si el alumno ya existe para actualizar datos
+                val alumno : Alumno = db.getAlumno(txtMatricula.text.toString())
+                if (alumno.id!=0){
+                    // update alumno
+                    val builder = AlertDialog.Builder(requireContext())
 
-                val id = db.insertarAlumno(nuevoAlumno)
-                if (id > 0){
-                    Toast.makeText(requireContext(), "Alumno agregado ID= $id", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(requireContext(), "Error al agregar alumno", Toast.LENGTH_SHORT).show()
+                    // preguntar si quiere actualizar datos
+                    builder.setTitle("CRUD Alumnos")
+                    builder.setMessage("El alumno ya existe ¿Deseas Actualizar datos?")
+
+                    builder.setPositiveButton("Aceptar") { dialog, which ->
+                        val id: Int = db.actualizarAlumno(dataAlumno, alumno.id)
+                        // validar si Actualizo
+                        if (id > 0) {
+                            Toast.makeText(
+                                requireContext(),
+                                "Se Actualizo con exito, ID = $id",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            Toast.makeText(
+                                requireContext(),
+                                "No fue posible Actualizar alumno",
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                        }
+                    }
+                    builder.setNegativeButton("Cancelar") { dialog, which ->
+                        Toast.makeText(requireContext(), "Cancelado", Toast.LENGTH_SHORT).show()
+                    }
+                    builder.show()
+                } else
+                // si el alumno no existe podemos insertar nuevo alumno
+                {
+                    // insert alumno en tabla
+                    val id : Long = db.insertarAlumno(dataAlumno)
+                    // validar si agrego
+                    if (id>0)
+                    {
+                        Toast.makeText(requireContext(), "Se agregó con exito, ID = $id", Toast.LENGTH_SHORT).show()
+                    }
+                    else
+                    {
+                        Toast.makeText(requireContext(), "No fue posible agregar alumno", Toast.LENGTH_SHORT).show()
+
+                    }
                 }
-                db.close()
-
             }
-        })
+        }
+
 
         btnBuscar.setOnClickListener(View.OnClickListener {
             if(txtMatricula.text.isEmpty()){
@@ -124,6 +170,57 @@ class AlumnosFragment : Fragment() {
                 txtEspecialidad.setText("")
             }
         })
+
+        btnBorrar.setOnClickListener {
+            if (txtMatricula.text.isEmpty()) Toast.makeText(requireContext(),
+                "Falto capturar Matricula", Toast.LENGTH_SHORT
+            ).show()
+            else {
+
+                val builder = AlertDialog.Builder(requireContext())
+
+                // preguntar si quiere borrar datos
+                builder.setTitle("CRUD Alumnos")
+                builder.setMessage("¿Deseas Eliminar datos del ALumno permanentemente?")
+
+                builder.setPositiveButton("Aceptar") { dialog, which ->
+                    db = AlumnoDB(requireContext())
+                    db.openDataBase()
+                    val alumno: Alumno = db.getAlumno(txtMatricula.text.toString())
+                    if (alumno.id != 0) {
+                        val id: Int = db.borrarAlumno(alumno.id)
+                        // validar si Borro
+                        if (id > 0) {
+                            Toast.makeText(
+                                requireContext(),
+                                "Se Borro con exito, ID = $id",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            txtMatricula.setText("")
+                            txtNombre.setText("")
+                            txtDomicilio.setText("")
+                            txtEspecialidad.setText("")
+
+                        } else {
+                            Toast.makeText(
+                                requireContext(),
+                                "No fue posible borrar alumno",
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                        }
+                    }
+                }
+
+                builder.setNegativeButton("Cancelar") { dialog, which ->
+                    Toast.makeText(requireContext(), "Cancelado", Toast.LENGTH_SHORT).show()
+                }
+                builder.show()
+
+
+
+            }
+        }
 
 
 
