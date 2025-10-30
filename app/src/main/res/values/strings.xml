@@ -12,4 +12,7 @@
     <string name="strMatriculaA">Matrícula</string>
     <string name="strNombreA">Nombre</string>
     <string name="strDomicilio">Domicilio</string>
+    <string name="strFotoDes">Descripcion de la foto</string>
+    <string name="strBuscarA">Buscar Alumno</string>
+    <string name="strCarreraA">Carrera</string>
 </resources>
