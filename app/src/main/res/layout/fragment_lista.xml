@@ -49,8 +49,7 @@
             android:elevation="3dp"
             android:backgroundTint="@color/azul_claro"
             android:contentDescription="Agregar Alumno">
-        </com.google.android.material.floatingactionbutton.FloatingActionButton
-            >
+        </com.google.android.material.floatingactionbutton.FloatingActionButton>
 
     </LinearLayout>
 </FrameLayout>
