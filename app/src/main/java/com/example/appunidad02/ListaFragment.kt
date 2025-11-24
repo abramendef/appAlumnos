@@ -63,9 +63,10 @@ class ListaFragment : Fragment() {
             }
             val alumnoFragment = AlumnosFragment()
             alumnoFragment.arguments = bundle
+            val bottom = requireActivity().findViewById<BottomNavigationView>(R.id.btnNavegador)
+            bottom.menu.findItem(R.id.btnAlumnos).isChecked = true
             parentFragmentManager.beginTransaction().replace(R.id.frmContenedor, alumnoFragment)
                 .addToBackStack(null).commit()
-            cambiarFragment()
         })
 
         srv?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
