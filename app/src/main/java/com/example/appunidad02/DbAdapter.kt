@@ -5,18 +5,23 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Filter
+import android.widget.Filterable
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.appunidad02.database.Alumno
+import java.util.Locale
 
 class DbAdapter(
-    private var listaAlumno : ArrayList<Alumno>,
+    private var listaAlumno: ArrayList<Alumno>,
     private val contexto: Context
-)   :RecyclerView.Adapter<DbAdapter.ViewHolder>(),
-    View.OnClickListener {
+) : RecyclerView.Adapter<DbAdapter.ViewHolder>(),
+    View.OnClickListener, Filterable {
+
     private val inflater: LayoutInflater = LayoutInflater.from(contexto)
     private var listener: View.OnClickListener? = null
+    private var listaAlumnoOriginal: ArrayList<Alumno> = ArrayList(listaAlumno)
 
     //declarar clase interna
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -24,8 +29,6 @@ class DbAdapter(
         val txtMatricula: TextView = itemView.findViewById(R.id.txtMatricula)
         val txtCarrera: TextView = itemView.findViewById(R.id.txtCarrera)
         val idImagen: ImageView = itemView.findViewById(R.id.imgAlumno)
-
-
     }
 
     override fun onCreateViewHolder(
@@ -52,8 +55,12 @@ class DbAdapter(
         } catch (e: Exception) {
             holder.idImagen.setImageResource(R.drawable.alumno)
         }
-
     }
+
+    fun getItem(position: Int): Alumno {
+        return listaAlumno[position]
+    }
+
 
     override fun getItemCount(): Int {
         return listaAlumno.size
@@ -65,16 +72,41 @@ class DbAdapter(
 
     fun actualizarLista(lista: ArrayList<Alumno>) {
         listaAlumno = lista
+        listaAlumnoOriginal = ArrayList(lista)
         notifyDataSetChanged()
     }
 
     fun setOnClickListener(listener: View.OnClickListener) {
         this.listener = listener
     }
+
+    override fun getFilter(): Filter {
+        return object : Filter() {
+            override fun performFiltering(constraint: CharSequence?): FilterResults {
+                val filteredList = ArrayList<Alumno>()
+                val charSearch = constraint.toString().lowercase(Locale.ROOT)
+
+                if (charSearch.isEmpty()) {
+                    filteredList.addAll(listaAlumnoOriginal)
+                } else {
+                    for (alumno in listaAlumnoOriginal) {
+                        if (alumno.nombre.lowercase(Locale.ROOT).contains(charSearch) ||
+                            alumno.matricula.lowercase(Locale.ROOT).contains(charSearch)) {
+                            filteredList.add(alumno)
+                        }
+                    }
+                }
+                val filterResults = FilterResults()
+                filterResults.values = filteredList
+                return filterResults
+            }
+
+            @Suppress("UNCHECKED_CAST")
+            override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+                listaAlumno.clear()
+                listaAlumno.addAll(results?.values as ArrayList<Alumno>)
+                notifyDataSetChanged()
+            }
+        }
+    }
 }
-
-
-
-
-
-

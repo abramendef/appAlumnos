@@ -19,6 +19,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.appunidad02.database.Alumno
 import com.example.appunidad02.database.AlumnoDB
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -59,10 +60,16 @@ class AlumnosFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_alumnos, container, false)
+
         iniciarComponentes(view)
         eventosClick()
         return view
 
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        AlumnoFromListFragment()
     }
 
     fun iniciarComponentes(view: View) {
@@ -77,7 +84,6 @@ class AlumnosFragment : Fragment() {
         txtEspecialidad = view.findViewById(R.id.txtEspecialidad)
         imgFoto = view.findViewById(R.id.imgAlumno)
         txtFoto = view.findViewById(R.id.txtFoto)
-
     }
 
     @SuppressLint("CheckResult")
@@ -172,7 +178,8 @@ class AlumnosFragment : Fragment() {
                     txtDomicilio.setText(alumno.domicilio)
                     txtEspecialidad.setText(alumno.especialidad)
                     Glide.with(requireContext())
-                        .load(Uri.parse(alumno.foto))
+                        .load(alumno.foto)
+                        .error(R.drawable.alumno)
                         .apply(RequestOptions().override(100, 100))
                         .into(imgFoto)
                     imgFoto.tag = alumno.foto
@@ -275,6 +282,31 @@ class AlumnosFragment : Fragment() {
             txtFoto.setText(imgFoto.tag?.toString())
 
         }
+    }
+
+    fun AlumnoFromListFragment(){
+        if (!isAdded) return
+
+        val alumnoLista = arguments?.getSerializable("miAlumno") as? Alumno
+
+        alumnoLista?.let {
+            Toast.makeText(requireContext(), alumnoLista.nombre.toString(), Toast.LENGTH_SHORT).show()
+            txtMatricula.setText(alumnoLista.matricula)
+            txtNombre.setText(alumnoLista.nombre)
+            txtDomicilio.setText(alumnoLista.domicilio)
+            txtEspecialidad.setText(alumnoLista.especialidad)
+            txtFoto.setText(alumnoLista.foto.toString())
+            imgFoto.tag = alumnoLista.foto.toString()
+
+            Glide.with(requireContext())
+                .load(alumnoLista.foto)
+                .error(R.drawable.alumno)
+                .apply(RequestOptions().override(100, 100))
+                .into(imgFoto)
+            imgFoto.tag = alumnoLista.foto
+            txtFoto.setText(imgFoto.tag?.toString())
+        }
+
     }
 
 }
