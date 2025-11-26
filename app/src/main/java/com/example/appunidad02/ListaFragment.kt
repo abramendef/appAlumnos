@@ -98,4 +98,5 @@ class ListaFragment : Fragment() {
         bottom.menu.findItem(R.id.btnAlumnos).isChecked = true
         (activity as? MainActivity)?.cambiarFragmento(AlumnosFragment())
     }
+
 }
