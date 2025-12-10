@@ -3,6 +3,7 @@ package com.example.appunidad02
 import android.content.Context
 import android.net.Uri
 import android.view.LayoutInflater
+import com.bumptech.glide.Glide
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Filter
@@ -49,12 +50,15 @@ class DbAdapter(
         holder.txtNombre.text = alumno.nombre
         holder.txtCarrera.text = alumno.especialidad
 
-        try {
-            val uri = Uri.parse(alumno.foto)
-            holder.idImagen.setImageURI(uri)
-        } catch (e: Exception) {
+        if (alumno.foto.isNullOrEmpty()) {
             holder.idImagen.setImageResource(R.drawable.alumno)
+        } else {
+            Glide.with(contexto)
+                .load(alumno.foto)
+                .error(R.drawable.alumno)
+                .into(holder.idImagen)
         }
+
     }
 
     fun getItem(position: Int): Alumno {

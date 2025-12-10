@@ -11,6 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.example.appunidad02.database.AlumnoDB
 import com.example.appunidad02.database.SyncUtil
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.zxing.integration.android.IntentIntegrator
 
 class InicioFragment : Fragment() {
@@ -63,22 +64,47 @@ class InicioFragment : Fragment() {
         val alumnoNuevo = QrUtils.jsonToAlumno(jsonStr)
 
         if (alumnoNuevo != null) {
-            // 2. Mostrar Previsualización (Alerta)
+            // 2. Mostrar previsualización (Alerta) solo para VALIDAR
             AlertDialog.Builder(requireContext())
-                .setTitle("Alumno Detectado")
-                .setMessage("Matrícula: ${alumnoNuevo.matricula}\n" +
-                        "Nombre: ${alumnoNuevo.nombre}\n" +
-                        "Carrera: ${alumnoNuevo.especialidad}\n\n" +
-                        "¿Deseas guardarlo en la base de datos?")
-                .setPositiveButton("Guardar") { _, _ ->
-                    guardarEnBD(alumnoNuevo)
+                .setTitle("Alumno detectado")
+                .setMessage(
+                    "Matrícula: ${alumnoNuevo.matricula}\n" +
+                            "Nombre: ${alumnoNuevo.nombre}\n" +
+                            "Carrera: ${alumnoNuevo.especialidad}\n\n" +
+                            "¿Deseas validar estos datos en el formulario?"
+                )
+                .setPositiveButton("Validar") { _, _ ->
+                    // 👉 Enviar el alumno a AlumnosFragment sin guardar todavía
+                    val bundle = Bundle().apply {
+                        putSerializable("miAlumno", alumnoNuevo)
+                    }
+
+                    val alumnoFragment = AlumnosFragment().apply {
+                        arguments = bundle
+                    }
+
+                    // Marcar el botón de navegación de Alumnos como seleccionado
+                    val bottom = requireActivity()
+                        .findViewById<BottomNavigationView>(R.id.btnNavegador)
+                    bottom.menu.findItem(R.id.btnAlumnos).isChecked = true
+
+                    // Cambiar al fragmento de alumnos con el alumno precargado
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.frmContenedor, alumnoFragment)
+                        .addToBackStack(null)
+                        .commit()
                 }
                 .setNegativeButton("Cancelar", null)
                 .show()
         } else {
-            Toast.makeText(requireContext(), "El QR no tiene formato válido de Alumno", Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                requireContext(),
+                "El QR no tiene formato válido de Alumno",
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
+
 
     private fun guardarEnBD(alumno: com.example.appunidad02.database.Alumno) {
         val db = AlumnoDB(requireContext())
