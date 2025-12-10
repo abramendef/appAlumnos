@@ -19,6 +19,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.appunidad02.database.Alumno
 import com.example.appunidad02.database.AlumnoDB
+import com.example.appunidad02.database.SyncUtil
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 // TODO: Rename parameter arguments, choose names that match
@@ -146,6 +147,7 @@ class AlumnosFragment : Fragment() {
                                 "Se Actualizó con éxito, ID = $id",
                                 Toast.LENGTH_SHORT
                             ).show()
+                            SyncUtil.iniciarSincronizacion(requireContext())
                         } else {
                             Toast.makeText(
                                 requireContext(),
@@ -168,6 +170,7 @@ class AlumnosFragment : Fragment() {
                     if (id>0)
                     {
                         Toast.makeText(requireContext(), "Se agregó con exito, ID = $id", Toast.LENGTH_SHORT).show()
+                        SyncUtil.iniciarSincronizacion(requireContext())
                     }
                     else
                     {
@@ -253,6 +256,7 @@ class AlumnosFragment : Fragment() {
                                 "Se marcó como borrado (borrado lógico), ID = ${alumno.id}",
                                 Toast.LENGTH_SHORT
                             ).show()
+                            SyncUtil.iniciarSincronizacion(requireContext())
 
                             // limpiar UI
                             txtMatricula.setText("")

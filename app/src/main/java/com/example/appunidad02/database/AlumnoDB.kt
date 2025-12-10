@@ -131,5 +131,34 @@ class AlumnoDB(private val context: Context) {
         dbHelper.close()
     }
 
+    // --- MÉTODOS PARA SINCRONIZACIÓN (Punto 4.3) ---
+
+    fun getAlumnosPendientesSync(): List<Alumno> {
+        val lista = ArrayList<Alumno>()
+        val db = dbHelper.readableDatabase
+        // Traer todo lo que tenga syncState diferente de 0
+        val cursor = db.rawQuery("SELECT * FROM ${DefinirTabla.Alumnos.TABLA} WHERE ${DefinirTabla.Alumnos.SYNC_STATE} != 0", null)
+
+        while (cursor.moveToNext()) {
+            lista.add(mostrarAlumno(cursor)) // Reusamos tu función mostrarAlumno
+        }
+        cursor.close()
+        return lista
+    }
+
+    fun updateSyncFields(id: Int, syncState: Int) {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(DefinirTabla.Alumnos.SYNC_STATE, syncState)
+        }
+        db.update(DefinirTabla.Alumnos.TABLA, values, "${DefinirTabla.Alumnos.ID} = ?", arrayOf(id.toString()))
+    }
+
+    fun deleteAlumnoDefinitivo(id: Int) {
+        val db = dbHelper.writableDatabase
+        db.delete(DefinirTabla.Alumnos.TABLA, "${DefinirTabla.Alumnos.ID} = ?", arrayOf(id.toString()))
+    }
+
+
 
 }
