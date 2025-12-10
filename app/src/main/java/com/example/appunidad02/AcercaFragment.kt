@@ -1,59 +1,62 @@
 package com.example.appunidad02
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import com.bumptech.glide.Glide
+import com.example.appunidad02.database.Alumno
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [AcercaFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class AcercaFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_acerca, container, false)
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment AcercaFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            AcercaFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val imgFoto = view.findViewById<ImageView>(R.id.imgFoto)
+        val txtNombre = view.findViewById<TextView>(R.id.txtNombre)
+        val txtMatricula = view.findViewById<TextView>(R.id.txtMatricula)
+        val txtEspecialidad = view.findViewById<TextView>(R.id.txtEspecialidad)
+        val txtDomicilio = view.findViewById<TextView>(R.id.txtDomicilio)
+
+        val imgQr = view.findViewById<ImageView>(R.id.imgQrAcercaDe)
+
+        val miPerfil = Alumno(
+            matricula = "2024030405",
+            nombre = "Jesus Abraham Mendez Figueroa",
+            especialidad = "Tec. Informacion",
+            domicilio = "Club Real",
+            foto = "https://raw.githubusercontent.com/abramendef/yo/0956e819c231a77facce0862aa7de9378232105a/IMG-20250814-WA0003.jpg"
+        )
+
+        txtNombre.text = miPerfil.nombre
+        txtMatricula.text = "Matrícula: ${miPerfil.matricula}"
+        txtEspecialidad.text = "Carrera: ${miPerfil.especialidad}"
+        txtDomicilio.text = "Domicilio: ${miPerfil.domicilio}"
+        Glide.with(this)
+            .load(miPerfil.foto)
+            .centerCrop()
+            .into(imgFoto)
+
+        try {
+            // 2. Convertir a JSON usando la utilidad que creamos
+            val jsonStr = QrUtils.alumnoToJson(miPerfil)
+
+            // 3. Generar el Bitmap y ponerlo en la imagen automáticamente
+            val bitmap = QrUtils.generarQrBitmap(jsonStr)
+            imgQr.setImageBitmap(bitmap)
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }
