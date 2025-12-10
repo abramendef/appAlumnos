@@ -107,13 +107,20 @@ class AlumnosFragment : Fragment() {
                 txtFoto.setText(foto)
 
                 // Generar el objeto alumno y asignar los datos
+                // Generar el objeto alumno y asignar los datos
                 val dataAlumno = Alumno().apply {
                     this.matricula = matricula
                     this.nombre = nombre
                     this.domicilio = domicilio
                     this.especialidad = especialidad
                     this.foto = foto
+
+                    // 🔹 Campos de sincronización – paso 3.1
+                    this.syncState = 1              // pendiente de alta/edición en Firebase
+                    this.deleted = 0                // activo
+                    this.updatedAt = System.currentTimeMillis()   // marca de tiempo actual
                 }
+
                 // validar primero si el alumno ya existe para actualizar datos
                 val alumno : Alumno = db.getAlumno(txtMatricula.text.toString())
                 if (alumno.id!=0){
@@ -125,12 +132,18 @@ class AlumnosFragment : Fragment() {
                     builder.setMessage("El alumno ya existe ¿Deseas Actualizar datos?")
 
                     builder.setPositiveButton("Aceptar") { dialog, which ->
+
+                        // 🔹 3.2: marcar cambios para sync ANTES del update
+                        dataAlumno.syncState = 1        // pendiente de mandar a Firebase
+                        dataAlumno.deleted = 0          // aseguramos que quede como activo
+                        dataAlumno.updatedAt = System.currentTimeMillis()
+
                         val id: Int = db.actualizarAlumno(dataAlumno, alumno.id)
                         // validar si Actualizo
                         if (id > 0) {
                             Toast.makeText(
                                 requireContext(),
-                                "Se Actualizo con exito, ID = $id",
+                                "Se Actualizó con éxito, ID = $id",
                                 Toast.LENGTH_SHORT
                             ).show()
                         } else {
@@ -139,9 +152,9 @@ class AlumnosFragment : Fragment() {
                                 "No fue posible Actualizar alumno",
                                 Toast.LENGTH_SHORT
                             ).show()
-
                         }
                     }
+
                     builder.setNegativeButton("Cancelar") { dialog, which ->
                         Toast.makeText(requireContext(), "Cancelado", Toast.LENGTH_SHORT).show()
                     }
@@ -223,16 +236,25 @@ class AlumnosFragment : Fragment() {
                 builder.setPositiveButton("Aceptar") { dialog, which ->
                     db = AlumnoDB(requireContext())
                     db.openDataBase()
+
                     val alumno: Alumno = db.getAlumno(txtMatricula.text.toString())
                     if (alumno.id != 0) {
-                        val id: Int = db.borrarAlumno(alumno.id)
-                        // validar si Borro
-                        if (id > 0) {
+
+                        // 🔹 3.3: BORRADO LÓGICO
+                        alumno.deleted = 1                 // marcado como borrado lógico
+                        alumno.syncState = 2               // pendiente de borrar en Firebase
+                        alumno.updatedAt = System.currentTimeMillis()
+
+                        val filas: Int = db.actualizarAlumno(alumno, alumno.id)
+
+                        if (filas > 0) {
                             Toast.makeText(
                                 requireContext(),
-                                "Se Borro con exito, ID = $id",
+                                "Se marcó como borrado (borrado lógico), ID = ${alumno.id}",
                                 Toast.LENGTH_SHORT
                             ).show()
+
+                            // limpiar UI
                             txtMatricula.setText("")
                             txtNombre.setText("")
                             txtDomicilio.setText("")
@@ -240,17 +262,16 @@ class AlumnosFragment : Fragment() {
                             imgFoto.setImageResource(R.drawable.alumno)
                             imgFoto.tag = null
                             txtFoto.setText("")
-
                         } else {
                             Toast.makeText(
                                 requireContext(),
-                                "No fue posible borrar alumno",
+                                "No fue posible marcar como borrado",
                                 Toast.LENGTH_SHORT
                             ).show()
-
                         }
                     }
                 }
+
 
                 builder.setNegativeButton("Cancelar") { dialog, which ->
                     Toast.makeText(requireContext(), "Cancelado", Toast.LENGTH_SHORT).show()

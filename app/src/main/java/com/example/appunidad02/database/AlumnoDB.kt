@@ -108,12 +108,13 @@ class AlumnoDB(private val context: Context) {
         val cursor = db.query(
             DefinirTabla.Alumnos.TABLA,
             leerRegistro,
-            null,
+            "${DefinirTabla.Alumnos.DELETED} = 0",   // 🔹 solo los NO borrados
             null,
             null,
             null,
             null
         )
+
         val listAlumno = ArrayList<Alumno>()
         cursor.moveToFirst()
         while (!cursor.isAfterLast) {
@@ -124,6 +125,7 @@ class AlumnoDB(private val context: Context) {
         cursor.close()
         return listAlumno
     }
+
 
     fun close() {
         dbHelper.close()
