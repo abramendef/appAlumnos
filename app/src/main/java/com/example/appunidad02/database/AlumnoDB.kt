@@ -16,58 +16,76 @@ class AlumnoDB(private val context: Context) {
         DefinirTabla.Alumnos.NOMBRE,
         DefinirTabla.Alumnos.DOMICILIO,
         DefinirTabla.Alumnos.ESPECIALIDAD,
-        DefinirTabla.Alumnos.FOTO
-
+        DefinirTabla.Alumnos.FOTO,
+        DefinirTabla.Alumnos.SYNC_STATE,
+        DefinirTabla.Alumnos.UPDATED_AT,
+        DefinirTabla.Alumnos.DELETED
     )
+
 
     fun openDataBase(){
         db = dbHelper.writableDatabase
     }
 
-    fun insertarAlumno(alumno: Alumno) : Long{
-
-        val value = ContentValues().apply{
+    fun insertarAlumno(alumno: Alumno) : Long {
+        val values = ContentValues().apply {
             put(DefinirTabla.Alumnos.MATRICULA, alumno.matricula)
             put(DefinirTabla.Alumnos.NOMBRE, alumno.nombre)
             put(DefinirTabla.Alumnos.DOMICILIO, alumno.domicilio)
             put(DefinirTabla.Alumnos.ESPECIALIDAD, alumno.especialidad)
             put(DefinirTabla.Alumnos.FOTO, alumno.foto)
+
+            // Nuevos campos
+            put(DefinirTabla.Alumnos.SYNC_STATE, alumno.syncState)     // o 1 si es “pendiente subir”
+            put(DefinirTabla.Alumnos.UPDATED_AT, alumno.updatedAt)     // o System.currentTimeMillis()
+            put(DefinirTabla.Alumnos.DELETED, alumno.deleted)          // normalmente 0
         }
-        return db.insert(DefinirTabla.Alumnos.TABLA,null, value)
+        return db.insert(DefinirTabla.Alumnos.TABLA, null, values)
     }
-    fun actualizarAlumno(alumno: Alumno, id : Int) : Int{
 
-        val value = ContentValues().apply{
+    fun actualizarAlumno(alumno: Alumno, id : Int) : Int {
+        val values = ContentValues().apply {
             put(DefinirTabla.Alumnos.MATRICULA, alumno.matricula)
             put(DefinirTabla.Alumnos.NOMBRE, alumno.nombre)
             put(DefinirTabla.Alumnos.DOMICILIO, alumno.domicilio)
             put(DefinirTabla.Alumnos.ESPECIALIDAD, alumno.especialidad)
             put(DefinirTabla.Alumnos.FOTO, alumno.foto)
+
+            // Nuevos campos
+            put(DefinirTabla.Alumnos.SYNC_STATE, alumno.syncState)
+            put(DefinirTabla.Alumnos.UPDATED_AT, alumno.updatedAt)
+            put(DefinirTabla.Alumnos.DELETED, alumno.deleted)
         }
-        return db.update(DefinirTabla.Alumnos.TABLA, value, "${DefinirTabla.Alumnos.ID} = ?",
+        return db.update(
+            DefinirTabla.Alumnos.TABLA,
+            values,
+            "${DefinirTabla.Alumnos.ID} = ?",
             arrayOf(id.toString())
         )
     }
+
     fun borrarAlumno(id : Int) : Int{
         return db.delete(DefinirTabla.Alumnos.TABLA, "${DefinirTabla.Alumnos.ID} = ?",
             arrayOf(id.toString()))
     }
 
-    fun mostrarAlumno (cursor: Cursor) : Alumno{
+    fun mostrarAlumno(cursor: Cursor) : Alumno {
+        if (cursor.isAfterLast) return Alumno()
 
-        if (!cursor.isAfterLast){
-            return Alumno().apply {
-                id = cursor.getInt(0)
-                matricula = cursor.getString(1)
-                nombre = cursor.getString(2)
-                domicilio = cursor.getString(3)
-                especialidad = cursor.getString(4)
-                foto = cursor.getString(5)
-            }
-        } else {
-            return Alumno()
+        return Alumno().apply {
+            id = cursor.getInt(cursor.getColumnIndexOrThrow(DefinirTabla.Alumnos.ID))
+            matricula = cursor.getString(cursor.getColumnIndexOrThrow(DefinirTabla.Alumnos.MATRICULA))
+            nombre = cursor.getString(cursor.getColumnIndexOrThrow(DefinirTabla.Alumnos.NOMBRE))
+            domicilio = cursor.getString(cursor.getColumnIndexOrThrow(DefinirTabla.Alumnos.DOMICILIO))
+            especialidad = cursor.getString(cursor.getColumnIndexOrThrow(DefinirTabla.Alumnos.ESPECIALIDAD))
+            foto = cursor.getString(cursor.getColumnIndexOrThrow(DefinirTabla.Alumnos.FOTO))
+
+            syncState = cursor.getInt(cursor.getColumnIndexOrThrow(DefinirTabla.Alumnos.SYNC_STATE))
+            updatedAt = cursor.getLong(cursor.getColumnIndexOrThrow(DefinirTabla.Alumnos.UPDATED_AT))
+            deleted = cursor.getInt(cursor.getColumnIndexOrThrow(DefinirTabla.Alumnos.DELETED))
         }
     }
+
     fun getAlumno(matricula: String): Alumno {
         val db = dbHelper.readableDatabase
         val cursor = db.query(
